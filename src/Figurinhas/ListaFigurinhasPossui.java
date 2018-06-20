@@ -1,16 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package Figurinhas;
 
 import java.util.ArrayList;
 
-/**
- *
- * @author marcos.castanheira
- */
 public class ListaFigurinhasPossui {
     
     private ArrayList<Integer> quantidade = new ArrayList<>();

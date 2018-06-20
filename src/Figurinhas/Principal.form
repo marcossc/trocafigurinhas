@@ -26,11 +26,12 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                  <Component id="listar" alignment="0" max="32767" attributes="0"/>
-                  <Component id="adicionar" alignment="0" max="32767" attributes="0"/>
+                  <Component id="solicitar" max="32767" attributes="0"/>
                   <Component id="remover" alignment="0" max="32767" attributes="0"/>
+                  <Component id="adicionar" alignment="0" max="32767" attributes="0"/>
+                  <Component id="listar" alignment="0" max="32767" attributes="0"/>
               </Group>
-              <EmptySpace pref="279" max="32767" attributes="0"/>
+              <EmptySpace pref="273" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -43,7 +44,9 @@
               <Component id="adicionar" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="remover" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="208" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="solicitar" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -71,6 +74,14 @@
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removerActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="solicitar">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Solicitar Figurinha"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="solicitarActionPerformed"/>
       </Events>
     </Component>
   </SubComponents>

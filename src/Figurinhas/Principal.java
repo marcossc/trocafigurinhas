@@ -36,6 +36,7 @@ public class Principal extends javax.swing.JFrame {
         listar = new javax.swing.JButton();
         adicionar = new javax.swing.JButton();
         remover = new javax.swing.JButton();
+        solicitar = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -60,6 +61,13 @@ public class Principal extends javax.swing.JFrame {
             }
         });
 
+        solicitar.setText("Solicitar Figurinha");
+        solicitar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                solicitarActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -67,10 +75,11 @@ public class Principal extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(listar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(solicitar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(remover, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(adicionar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(remover, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(279, Short.MAX_VALUE))
+                    .addComponent(listar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(273, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -81,7 +90,9 @@ public class Principal extends javax.swing.JFrame {
                 .addComponent(adicionar)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(remover)
-                .addContainerGap(208, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(solicitar)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
@@ -103,7 +114,22 @@ public class Principal extends javax.swing.JFrame {
     }//GEN-LAST:event_listarActionPerformed
 
     private void removerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removerActionPerformed
-        // TODO add your handling code here:
+        int num = 0;
+        do{
+            try{
+                num = Integer.parseInt(JOptionPane.showInputDialog(this, "Insira o número da figurinha:"));
+                if(num < 1 || num > 681)
+                    throw new Exception("Número inválido!");
+                if(possui.removerFigurinha(num))
+                    JOptionPane.showMessageDialog(this, "Removida com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+                else
+                    throw new Exception("Você não possui essa figurinha!");
+            }catch(Exception e){
+                num = 0;
+                JOptionPane.showMessageDialog(this, e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+                break;
+            }
+        }while(num == 0);
     }//GEN-LAST:event_removerActionPerformed
 
     private void adicionarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_adicionarActionPerformed
@@ -119,7 +145,12 @@ public class Principal extends javax.swing.JFrame {
             }
         }while(num == 0);
         possui.adicionarFigurinha(num);
+        JOptionPane.showMessageDialog(this, "Adicionada com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
     }//GEN-LAST:event_adicionarActionPerformed
+
+    private void solicitarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_solicitarActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_solicitarActionPerformed
 
     /**
      * @param args the command line arguments
@@ -160,5 +191,6 @@ public class Principal extends javax.swing.JFrame {
     private javax.swing.JButton adicionar;
     private javax.swing.JButton listar;
     private javax.swing.JButton remover;
+    private javax.swing.JButton solicitar;
     // End of variables declaration//GEN-END:variables
 }

@@ -1,11 +1,14 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package Figurinhas;
 
+import Servidor.IPPorta;
 import java.awt.Dimension;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 
 /**
@@ -15,13 +18,15 @@ import javax.swing.*;
 public class Principal extends javax.swing.JFrame {
 
     private ListaFigurinhasPossui possui = new ListaFigurinhasPossui();
-
+    private int porta;
     
     /**
      * Creates new form Principal
      */
     public Principal() {
         initComponents();
+        salvarPorta();
+
     }
 
     /**
@@ -37,6 +42,9 @@ public class Principal extends javax.swing.JFrame {
         adicionar = new javax.swing.JButton();
         remover = new javax.swing.JButton();
         solicitar = new javax.swing.JButton();
+        campoPorta = new javax.swing.JTextField();
+        salvaPorta = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -68,6 +76,17 @@ public class Principal extends javax.swing.JFrame {
             }
         });
 
+        campoPorta.setText("12345");
+
+        salvaPorta.setText("Salvar");
+        salvaPorta.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                salvaPortaActionPerformed(evt);
+            }
+        });
+
+        jLabel1.setText("Porta a utilizar:");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -79,13 +98,23 @@ public class Principal extends javax.swing.JFrame {
                     .addComponent(remover, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(adicionar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(listar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(273, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 59, Short.MAX_VALUE)
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(campoPorta, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(salvaPorta)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(listar)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(listar)
+                    .addComponent(campoPorta, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(salvaPorta)
+                    .addComponent(jLabel1))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(adicionar)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -109,8 +138,7 @@ public class Principal extends javax.swing.JFrame {
         textArea.setLineWrap(true);  
         textArea.setWrapStyleWord(true); 
         scrollPane.setPreferredSize(new Dimension(500, 500));
-        JOptionPane.showMessageDialog(null, scrollPane, "Lista de figurinhas",  
-                                               JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(null, scrollPane, "Lista de figurinhas", JOptionPane.INFORMATION_MESSAGE);
     }//GEN-LAST:event_listarActionPerformed
 
     private void removerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removerActionPerformed
@@ -149,9 +177,62 @@ public class Principal extends javax.swing.JFrame {
     }//GEN-LAST:event_adicionarActionPerformed
 
     private void solicitarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_solicitarActionPerformed
-        // TODO add your handling code here:
+        Socket socketCliente = null;
+        try {
+            socketCliente = new Socket("localhost", 6789);
+            System.out.println("Conectado ao Servidor!");
+            ObjectInputStream dis = new ObjectInputStream(
+                    socketCliente.getInputStream());
+            DataOutputStream dos = new DataOutputStream(
+                    socketCliente.getOutputStream());
+            
+            dos.writeUTF(String.valueOf(porta));
+            
+            ArrayList<IPPorta> mensagem = (ArrayList) dis.readObject();
+            String retorno = "";
+            for(IPPorta p: mensagem){
+                retorno = retorno + p.toString() + "\n";
+            }
+            JTextArea textArea = new JTextArea(retorno);
+            JScrollPane scrollPane = new JScrollPane(textArea);  
+            textArea.setLineWrap(true);  
+            textArea.setWrapStyleWord(true); 
+            scrollPane.setPreferredSize(new Dimension(500, 500));
+            JOptionPane.showMessageDialog(null, scrollPane, "Clientes ativos", JOptionPane.INFORMATION_MESSAGE);
+            
+        } catch (IOException ex) {
+            Logger.getLogger(Principal.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(Principal.class.getName()).log(Level.SEVERE, null, ex);
+        } finally{
+            try {
+                if(socketCliente != null)
+                    socketCliente.close();
+            } catch (IOException ex) {
+                Logger.getLogger(Principal.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }//GEN-LAST:event_solicitarActionPerformed
 
+    private void salvaPortaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_salvaPortaActionPerformed
+        salvarPorta();
+    }//GEN-LAST:event_salvaPortaActionPerformed
+
+    private void salvarPorta(){
+        int aux;
+        try{
+            aux = Integer.parseInt(campoPorta.getText());
+            if(aux > 0 && aux < 49152){
+                porta = aux;
+                JOptionPane.showMessageDialog(this, "Porta do servidor alterada para " + porta, "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+            }else
+                throw new Exception();
+        }catch(Exception e){
+            JOptionPane.showMessageDialog(this, "Porta Inválida", "Erro", JOptionPane.ERROR_MESSAGE);
+        }
+        campoPorta.setText(String.valueOf(porta));
+    }
+    
     /**
      * @param args the command line arguments
      */
@@ -189,8 +270,11 @@ public class Principal extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton adicionar;
+    private javax.swing.JTextField campoPorta;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JButton listar;
     private javax.swing.JButton remover;
+    private javax.swing.JButton salvaPorta;
     private javax.swing.JButton solicitar;
     // End of variables declaration//GEN-END:variables
 }

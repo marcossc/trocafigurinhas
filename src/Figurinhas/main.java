@@ -24,6 +24,6 @@ public class main {
             System.out.println(FigurinhasRepo.lista().get(i).getNumero() + " - " + possui.getQtd(i));
         }*/
         
-        new Thread(new Servidor.Servidor(6789)).run();
+        //new Thread(new Servidor.Servidor(6789)).run();
     }
 }

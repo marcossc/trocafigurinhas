@@ -4,10 +4,12 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
+import javax.swing.JOptionPane;
 
-public class ClienteTeste {
+public class Listener implements Runnable{
 
-    public static void main(String[] args) throws ClassNotFoundException {
+    @Override
+    public void run(){
         DatagramSocket aSocket = null;
         try {
             aSocket = new DatagramSocket(6789);
@@ -16,7 +18,9 @@ public class ClienteTeste {
                 System.out.println("Aguardando conexão...");
                 DatagramPacket request = new DatagramPacket(buffer, buffer.length);
                 aSocket.receive(request);
-                System.out.println("Reply: " + new String(request.getData()));
+                int ret = JOptionPane.showConfirmDialog(null, "Fulano quer a figurinha " + new String(request.getData()));
+                System.out.println(ret);
+                //0 = sim, 1 = não, 3 = cancelar
             }
         } catch (SocketException e) {
             System.out.println("Socket: " + e.getMessage());

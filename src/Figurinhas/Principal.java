@@ -1,14 +1,10 @@
 package Figurinhas;
 
-import Servidor.IPPorta;
 import java.awt.Dimension;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.net.Socket;
-import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.util.List;
 import javax.swing.*;
 
 /**
@@ -17,15 +13,16 @@ import javax.swing.*;
  */
 public class Principal extends javax.swing.JFrame {
 
-    private ListaFigurinhasPossui possui = new ListaFigurinhasPossui();
+    private final ListaFigurinhasPossui possui = new ListaFigurinhasPossui();
     private int porta;
-    
+        
     /**
      * Creates new form Principal
      */
     public Principal() {
         initComponents();
         salvarPorta();
+        new Thread(new Servidor.Listener()).start();
 
     }
 
@@ -177,41 +174,18 @@ public class Principal extends javax.swing.JFrame {
     }//GEN-LAST:event_adicionarActionPerformed
 
     private void solicitarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_solicitarActionPerformed
-        Socket socketCliente = null;
-        try {
-            socketCliente = new Socket("localhost", 6789);
-            System.out.println("Conectado ao Servidor!");
-            ObjectInputStream dis = new ObjectInputStream(
-                    socketCliente.getInputStream());
-            DataOutputStream dos = new DataOutputStream(
-                    socketCliente.getOutputStream());
-            
-            dos.writeUTF(String.valueOf(porta));
-            
-            ArrayList<IPPorta> mensagem = (ArrayList) dis.readObject();
-            String retorno = "";
-            for(IPPorta p: mensagem){
-                retorno = retorno + p.toString() + "\n";
+        int num;
+        do{
+            try{
+                num = Integer.parseInt(JOptionPane.showInputDialog(this, "Insira o número da figurinha:"));
+                if(num < 1 || num > 681)
+                    throw new Exception();
+            }catch(Exception e){
+                num = 0;
+                JOptionPane.showMessageDialog(this, "Número inválido", "Número inválido", JOptionPane.ERROR_MESSAGE);
             }
-            JTextArea textArea = new JTextArea(retorno);
-            JScrollPane scrollPane = new JScrollPane(textArea);  
-            textArea.setLineWrap(true);  
-            textArea.setWrapStyleWord(true); 
-            scrollPane.setPreferredSize(new Dimension(500, 500));
-            JOptionPane.showMessageDialog(null, scrollPane, "Clientes ativos", JOptionPane.INFORMATION_MESSAGE);
-            
-        } catch (IOException ex) {
-            Logger.getLogger(Principal.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(Principal.class.getName()).log(Level.SEVERE, null, ex);
-        } finally{
-            try {
-                if(socketCliente != null)
-                    socketCliente.close();
-            } catch (IOException ex) {
-                Logger.getLogger(Principal.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
+        }while(num == 0);
+        solicitarFigurinha(num);
     }//GEN-LAST:event_solicitarActionPerformed
 
     private void salvaPortaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_salvaPortaActionPerformed
@@ -224,13 +198,33 @@ public class Principal extends javax.swing.JFrame {
             aux = Integer.parseInt(campoPorta.getText());
             if(aux > 0 && aux < 49152){
                 porta = aux;
-                JOptionPane.showMessageDialog(this, "Porta do servidor alterada para " + porta, "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+                //JOptionPane.showMessageDialog(this, "Porta do servidor alterada para " + porta, "Sucesso", JOptionPane.INFORMATION_MESSAGE);
             }else
                 throw new Exception();
         }catch(Exception e){
             JOptionPane.showMessageDialog(this, "Porta Inválida", "Erro", JOptionPane.ERROR_MESSAGE);
         }
         campoPorta.setText(String.valueOf(porta));
+    }
+    
+    public void solicitarFigurinha(int numero){
+        DatagramSocket socket = null;
+        
+        try {
+            byte[] buffer = String.valueOf(numero).getBytes();
+
+            DatagramPacket packet = null;
+            List<InetAddress> lista = Servidor.Servidor.listAllBroadcastAddresses();
+            for(InetAddress n: lista){
+                packet = new DatagramPacket(buffer, buffer.length, n, 6789);
+                socket = new DatagramSocket();
+                socket.setBroadcast(true);
+                socket.send(packet);
+                socket.close();
+            }
+        } catch(Exception e) {
+            System.out.println(e.getMessage());
+        }
     }
     
     /**

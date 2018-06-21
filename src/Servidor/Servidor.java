@@ -1,15 +1,10 @@
 package Servidor;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -22,11 +17,9 @@ public class Servidor implements Runnable{
 
     private static DatagramSocket socket = null;
     private final String broadcastMessage;
-    private final InetAddress address;
 
-    public Servidor(String broadcastMessage, InetAddress address) {
+    public Servidor(String broadcastMessage) {
         this.broadcastMessage = broadcastMessage;
-        this.address = address;
     }
     
     @Override
@@ -55,7 +48,7 @@ public class Servidor implements Runnable{
             NetworkInterface networkInterface = interfaces.nextElement();
 
             if (networkInterface.isLoopback() || !networkInterface.isUp()) {
-                continue;
+                //continue;
             }
             networkInterface.getInterfaceAddresses().stream().map(a -> a.getBroadcast()).filter(Objects::nonNull).forEach(broadcastList::add);
         }
@@ -63,11 +56,7 @@ public class Servidor implements Runnable{
     }
     
     public static void main(String[] args) throws ClassNotFoundException, IOException {
-       new Thread(new Servidor("Funcionou essa caralha", InetAddress.getByName("255.255.255.255"))).start();
-       List<InetAddress> nova = listAllBroadcastAddresses();
-       nova.forEach((n) -> {
-           System.out.println(n.toString());
-        });
+       new Thread(new Servidor("Funcionou essa caralha")).start();
     }
     
 }

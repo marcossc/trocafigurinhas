@@ -1,5 +1,6 @@
 package Figurinhas;
 
+import Servidor.ServidorTroca;
 import java.awt.Dimension;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -15,6 +16,8 @@ public class Principal extends javax.swing.JFrame {
 
     private final ListaFigurinhasPossui possui = new ListaFigurinhasPossui();
     private int porta;
+    private Thread troca;
+    private Thread listener;
         
     /**
      * Creates new form Principal
@@ -22,8 +25,8 @@ public class Principal extends javax.swing.JFrame {
     public Principal() {
         initComponents();
         salvarPorta();
-        new Thread(new Servidor.Listener()).start();
-
+        listener = new Thread(new Servidor.Listener(possui));
+        listener.start();
     }
 
     /**
@@ -44,6 +47,7 @@ public class Principal extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setResizable(false);
 
         listar.setText("Listar Figurinhas");
         listar.addActionListener(new java.awt.event.ActionListener() {
@@ -186,6 +190,7 @@ public class Principal extends javax.swing.JFrame {
             }
         }while(num == 0);
         solicitarFigurinha(num);
+        troca = new Thread(new ServidorTroca(possui, num));
     }//GEN-LAST:event_solicitarActionPerformed
 
     private void salvaPortaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_salvaPortaActionPerformed
@@ -221,6 +226,7 @@ public class Principal extends javax.swing.JFrame {
                 socket.setBroadcast(true);
                 socket.send(packet);
                 socket.close();
+                System.out.println(n.getCanonicalHostName());
             }
         } catch(Exception e) {
             System.out.println(e.getMessage());

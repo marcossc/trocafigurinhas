@@ -55,8 +55,8 @@ public class Servidor implements Runnable{
         return broadcastList;
     }
     
-    public static void main(String[] args) throws ClassNotFoundException, IOException {
+    /*public static void main(String[] args) throws ClassNotFoundException, IOException {
        new Thread(new Servidor("Funcionou essa caralha")).start();
-    }
+    }*/
     
 }

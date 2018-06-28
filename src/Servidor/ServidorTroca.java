@@ -13,7 +13,7 @@ import javax.swing.JOptionPane;
 
 public class ServidorTroca implements Runnable {
 
-    public ListaFigurinhasPossui possui = new ListaFigurinhasPossui();
+    public ListaFigurinhasPossui possui;
     private int figurinha;
 
     public ServidorTroca(ListaFigurinhasPossui possui, int figurinha) {
@@ -43,10 +43,11 @@ public class ServidorTroca implements Runnable {
                 int ret = JOptionPane.showConfirmDialog(null, "Seu amigo tem a figurinha que você solicitou e quer a figurinha " + mensagem + ", trocar?");
                 //0 = sim, 1 = não, 3 = cancelar
                 if (ret == 0) {
-                    oos.writeUTF("aceito");
+                    dos.writeUTF("aceito");
                     trocaRealizada = true;
                     possui.adicionarFigurinha(figurinha);
                     possui.removerFigurinha(Integer.parseInt(mensagem));
+                    JOptionPane.showMessageDialog(null, "Troca realizada!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
                 } else {
                     oos.writeUTF("nah");
                 }

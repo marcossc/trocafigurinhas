@@ -3,6 +3,7 @@ package Servidor;
 import Figurinhas.FigurinhasRepo;
 import Figurinhas.ListaFigurinhasPossui;
 import java.awt.Dimension;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -24,7 +25,7 @@ import javax.swing.JTextArea;
 
 public class Listener implements Runnable {
 
-    private ListaFigurinhasPossui possui = new ListaFigurinhasPossui();
+    private ListaFigurinhasPossui possui;
 
     public Listener(ListaFigurinhasPossui possui) {
         this.possui = possui;
@@ -67,13 +68,14 @@ public class Listener implements Runnable {
                         System.out.println("Conectado ao Servidor!");
                         ObjectInputStream ois = new ObjectInputStream(socketCliente.getInputStream());
                         DataOutputStream dos = new DataOutputStream(socketCliente.getOutputStream());
+                        DataInputStream dis = new DataInputStream(socketCliente.getInputStream());
 
                         ListaFigurinhasPossui lista = (ListaFigurinhasPossui) ois.readObject();
                         while (!aceito) {
                             String retorno = "";
                             for (int i = 1; i <= 681; i++) {
                                 if (lista.getQtd(i) > 1) {
-                                    retorno = retorno.concat(FigurinhasRepo.lista().get(i) + " - " + possui.getQtd(i) + "\n");
+                                    retorno = retorno.concat(FigurinhasRepo.lista().get(i) + " - " + lista.getQtd(i) + "\n");
                                 }
                             }
                             JTextArea textArea = new JTextArea(retorno);
@@ -87,10 +89,13 @@ public class Listener implements Runnable {
                                 figurinhaTrocar = JOptionPane.showInputDialog(this, "Insira o número da figurinha que você deseja:");
                             }
                             dos.writeUTF(figurinhaTrocar);
-                            if (ois.readUTF().equals("aceito")) {
+                            String mensagem = dis.readUTF();
+                            System.out.println(mensagem);
+                            if (mensagem.equals("aceito")) {
                                 aceito = true;
-                                possui.removerFigurinha(Integer.parseInt(figurinhaTrocar));
-                                possui.adicionarFigurinha(Integer.parseInt(figurinhaSolicitada));
+                                System.out.println("Aceito");
+                                possui.removerFigurinha(Integer.parseInt(figurinhaSolicitada));
+                                possui.adicionarFigurinha(Integer.parseInt(figurinhaTrocar));
                                 JOptionPane.showMessageDialog(null, "Troca realizada!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
                             }
                         }

@@ -8,8 +8,14 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -30,20 +36,34 @@ public class Listener implements Runnable {
         String figurinhaSolicitada;
         try {
             aSocket = new DatagramSocket(6789);
+            boolean exibir;
             byte[] buffer = new byte[1000];
             while (true) {
-                System.out.println("Aguardando conexão...");
+                System.out.println("Listener aguardando conexão...");
                 DatagramPacket request = new DatagramPacket(buffer, buffer.length);
                 aSocket.receive(request);
                 figurinhaSolicitada = new String(request.getData()).trim();
-                int ret = JOptionPane.showConfirmDialog(null, "Alguém quer a figurinha " + figurinhaSolicitada + ", trocar?");
+                //System.out.println(request.getAddress()+" sender");
+                List<InetAddress> listaSender = listSenderAddresses();
+                exibir = true;
+                for(InetAddress e: listaSender){
+                    if(request.getAddress().equals(e))
+                        exibir = false;
+                }
+                int ret;
+                if(!exibir)
+                    ret = -1;
+                else ret = JOptionPane.showConfirmDialog(null, "Alguém quer a figurinha " + figurinhaSolicitada + ", trocar?");
                 System.out.println(ret);
                 //0 = sim, 1 = não, 3 = cancelar
+                
+                //Funcionalidade de troca lado solicitado
                 if (ret == 0 && possui.getQtd(Integer.parseInt(figurinhaSolicitada)) > 0) {
                     boolean aceito = false;
                     Socket socketCliente = null;
                     try {
-                        socketCliente = new Socket("localhost", 6790);
+                        System.out.println("Conectando ao servidor " + request.getAddress() + " na porta 6790");
+                        socketCliente = new Socket(request.getAddress(), 6790);
                         System.out.println("Conectado ao Servidor!");
                         ObjectInputStream ois = new ObjectInputStream(socketCliente.getInputStream());
                         DataOutputStream dos = new DataOutputStream(socketCliente.getOutputStream());
@@ -62,7 +82,7 @@ public class Listener implements Runnable {
                             textArea.setWrapStyleWord(true);
                             scrollPane.setPreferredSize(new Dimension(500, 500));
                             JOptionPane.showMessageDialog(null, scrollPane, "Lista de figurinhas para troca do amiguinho", JOptionPane.INFORMATION_MESSAGE);
-                            String figurinhaTrocar = JOptionPane.showInputDialog(this, "Insira o número da figurinha que você deseja:");
+                            String figurinhaTrocar = JOptionPane.showInputDialog(null, "Insira o número da figurinha que você deseja:", "Entrada", JOptionPane.QUESTION_MESSAGE);
                             while (!(Integer.parseInt(figurinhaTrocar) > 0 && Integer.parseInt(figurinhaTrocar) < 682)) {
                                 figurinhaTrocar = JOptionPane.showInputDialog(this, "Insira o número da figurinha que você deseja:");
                             }
@@ -100,5 +120,19 @@ public class Listener implements Runnable {
                 aSocket.close();
             }
         }
+    }
+    
+    public static List<InetAddress> listSenderAddresses() throws SocketException {
+        List<InetAddress> broadcastList = new ArrayList<>();
+        Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+        while (interfaces.hasMoreElements()) {
+            NetworkInterface networkInterface = interfaces.nextElement();
+
+            if (networkInterface.isLoopback() || !networkInterface.isUp()) {
+                continue;
+            }
+            networkInterface.getInterfaceAddresses().stream().map(a -> a.getAddress()).filter(Objects::nonNull).forEach(broadcastList::add);
+        }
+        return broadcastList;
     }
 }

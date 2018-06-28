@@ -1,11 +1,18 @@
-package Figurinhas;
+package Principal;
 
+import Figurinhas.FigurinhasRepo;
+import Figurinhas.ListaFigurinhasPossui;
 import Servidor.ServidorTroca;
 import java.awt.Dimension;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.Objects;
 import javax.swing.*;
 
 /**
@@ -189,8 +196,12 @@ public class Principal extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(this, "Número inválido", "Número inválido", JOptionPane.ERROR_MESSAGE);
             }
         }while(num == 0);
-        solicitarFigurinha(num);
+        try{
+            troca.join();
+        }catch(Exception e){}
         troca = new Thread(new ServidorTroca(possui, num));
+        troca.start();
+        solicitarFigurinha(num);
     }//GEN-LAST:event_solicitarActionPerformed
 
     private void salvaPortaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_salvaPortaActionPerformed
@@ -219,18 +230,32 @@ public class Principal extends javax.swing.JFrame {
             byte[] buffer = String.valueOf(numero).getBytes();
 
             DatagramPacket packet = null;
-            List<InetAddress> lista = Servidor.Servidor.listAllBroadcastAddresses();
+            List<InetAddress> lista = listAllBroadcastAddresses();
             for(InetAddress n: lista){
                 packet = new DatagramPacket(buffer, buffer.length, n, 6789);
                 socket = new DatagramSocket();
                 socket.setBroadcast(true);
                 socket.send(packet);
                 socket.close();
-                System.out.println(n.getCanonicalHostName());
+                System.out.println("Endereço de broadcast enviado: " + n.getCanonicalHostName());
             }
         } catch(Exception e) {
             System.out.println(e.getMessage());
         }
+    }
+    
+    public static List<InetAddress> listAllBroadcastAddresses() throws SocketException {
+        List<InetAddress> broadcastList = new ArrayList<>();
+        Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+        while (interfaces.hasMoreElements()) {
+            NetworkInterface networkInterface = interfaces.nextElement();
+
+            if (networkInterface.isLoopback() || !networkInterface.isUp()) {
+                continue;
+            }
+            networkInterface.getInterfaceAddresses().stream().map(a -> a.getBroadcast()).filter(Objects::nonNull).forEach(broadcastList::add);
+        }
+        return broadcastList;
     }
     
     /**
